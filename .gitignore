@@ -1,0 +1,28 @@
+# Environment and secrets
+.env
+venv/
+*.pyc
+__pycache__/
+
+# Credentials (NEVER commit these!)
+credentials/*.json
+!credentials/.gitkeep
+
+# Data and reports (contains sensitive analytics data)
+data/
+*.txt
+!requirements.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and cache
+*.log
+.cache/

@@ -1,0 +1,51 @@
+name: Weekly Website Analytics Report
+
+on:
+  # Run every Monday at 9:00 AM Beijing time (1:00 AM UTC)
+  schedule:
+    - cron: '0 1 * * 1'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create credentials file
+        run: |
+          mkdir -p credentials
+          echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > credentials/google_service_account.json
+      
+      - name: Run weekly report
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: credentials/google_service_account.json
+          GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
+          GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_PARENT_PAGE_ID: ${{ secrets.NOTION_PARENT_PAGE_ID }}
+        run: |
+          python src/main.py --save-data
+      
+      - name: Upload data artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analytics-data-${{ github.run_number }}
+          path: data/
+          retention-days: 30
